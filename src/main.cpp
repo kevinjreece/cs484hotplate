@@ -23,6 +23,7 @@ int main(int argc, char* argv[]) {
 	// cout << plate.toString();
 	plate.createSteadyState();
 	cout << plate.toString();
+	plate.printToFile("test.csv");
 
 	float time_e = getTime();
 	cout << time_e << "\n";

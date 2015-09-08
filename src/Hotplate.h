@@ -3,22 +3,23 @@
 #include <string>
 #include <algorithm>
 #include <iomanip>
+#include <fstream>
 #include <stdlib.h>
 
 using namespace std;
 
 class Hotplate {
 private:
-	char** _plate;
+	float** _plate;
 	int _length;
 	
 	class SteadyStateCreater {
 	private:
-		char** _plate;
+		float** _plate;
 		int _length;
-		char* _prev_row;
-		char* _curr_row;
-		char* _next_row;
+		float* _prev_row;
+		float* _curr_row;
+		float* _next_row;
 		float _max_change;
 
 		void calcMaxDiffForCell(int row, int col) {
@@ -26,7 +27,7 @@ private:
 		}
 
 		void calcNewCellValue(int row, int col) {
-			char val = (_prev_row[col] + _curr_row[col-1] + _curr_row[col+1] + _next_row[col] + (_curr_row[col]*4)) / 8;
+			float val = (_prev_row[col] + _curr_row[col-1] + _curr_row[col+1] + _next_row[col] + (_curr_row[col]*4)) / 8;
 			_plate[row][col] = val;
 			cout << (int)val << "\t";
 			//Check for steady state
@@ -46,13 +47,13 @@ private:
 		}
 
 	public:
-		SteadyStateCreater(char** plate, int length) {
+		SteadyStateCreater(float** plate, int length) {
 			_plate = plate;
 			_length = length;
 			float max_change = 100;
-			_prev_row = new char[_length];
-			_curr_row = new char[_length];
-			_next_row = new char[_length];
+			_prev_row = new float[_length];
+			_curr_row = new float[_length];
+			_next_row = new float[_length];
 		}
 
 		~SteadyStateCreater() {
@@ -100,17 +101,20 @@ public:
 	}
 
 	void printToFile(string fileName) {
-		string output = toString(", ");
+		ofstream outfile;
+		outfile.open(fileName);
+		outfile << toString(", ");
+		outfile.close();
 	}
 
 	Hotplate(int length) {
 		_length = length;
-		_plate = new char*[_length];
+		_plate = new float*[_length];
 
 		for (int i = 0; i < _length; i++) {
-			char* row = new char[_length];
+			float* row = new float[_length];
 			for (int j = 0; j < _length; j++) {
-				char temp;
+				float temp;
 				if (i == _length - 1) {
 					temp = 100;
 				}
