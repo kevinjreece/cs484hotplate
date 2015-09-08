@@ -1,65 +1,106 @@
 #include <iostream>
 #include <sstream>
 #include <string>
+#include <algorithm>
+#include <iomanip>
 #include <stdlib.h>
 
 using namespace std;
 
 class Hotplate {
-
 private:
 	char** _plate;
 	int _length;
-	char* _prev_row;
-	char* _curr_row;
-	char* _next_row;
+	
+	class SteadyStateCreater {
+	private:
+		char** _plate;
+		int _length;
+		char* _prev_row;
+		char* _curr_row;
+		char* _next_row;
+		float _max_change;
 
-	// float calcMaxDiffForCell() {
-
-	// }
-
-	void calcSteadyStateForCell(int row, int col, float max_change) {
-		char val = (_prev_row[col] + _curr_row[col-1] + _curr_row[col+1] + _next_row[col] + (_curr_row[col]*4)) / 8;
-		_plate[row][col] = val;
-		printf("%d\n", _plate[row][col]);
-		//Check for steady state
-		if (row == 1);
-		else if (row == _length - 2) {
-			char new_cell = _plate[row-1][col];
-
+		void calcMaxDiffForCell(int row, int col) {
+			 _max_change = max(_max_change, (float)abs(_plate[row][col] - (_plate[row-1][col] + _plate[row][col-1] + _plate[row][col+1] + _plate[row+1][col])/4));
 		}
-	}
 
-	void calcSteadyStateForEntirePlate() {
-		float max_change = 100;
-		while (max_change > 0.1) {
+		void calcNewCellValue(int row, int col) {
+			char val = (_prev_row[col] + _curr_row[col-1] + _curr_row[col+1] + _next_row[col] + (_curr_row[col]*4)) / 8;
+			_plate[row][col] = val;
+			cout << (int)val << "\t";
+			//Check for steady state
+			if (row == 1);
+			else if (row > 1 && row < _length-2) {
+				calcMaxDiffForCell(row-1, col);
+			}
+			if (row == _length-2) {
+				if (col == 1);
+				else if (col > 1 && col < _length-2) {
+					calcMaxDiffForCell(row, col-1);
+				}
+				if (col == _length - 2) {
+					calcMaxDiffForCell(row, col);
+				}
+			}
+		}
+
+	public:
+		SteadyStateCreater(char** plate, int length) {
+			_plate = plate;
+			_length = length;
+			float max_change = 100;
 			_prev_row = new char[_length];
 			_curr_row = new char[_length];
 			_next_row = new char[_length];
-			memcpy(_prev_row, _plate[0], _length);
-			memcpy(_curr_row, _plate[1], _length);
-			memcpy(_next_row, _plate[2], _length);
-			for (int i = 1; i < _length - 1; i++) {
-				for (int j = 1; j < _length - 1; j++) {
-					calcSteadyStateForCell(i, j, max_change);
-				}
-				memcpy(_prev_row, _curr_row, _length);
-				memcpy(_curr_row, _next_row, _length);
-				memcpy(_next_row, _plate[i+2], _length);
-			}
 		}
-	}
+
+		~SteadyStateCreater() {
+			delete _prev_row;
+			delete _curr_row;
+			delete _next_row;
+		}
+
+		void createSteadyState() {
+			int steps = 0;
+			while (_max_change > 0.1 && steps < 100) {
+				steps++;
+				_max_change = 0;
+				memcpy(_curr_row, _plate[0], _length);
+				memcpy(_next_row, _plate[1], _length);
+				for (int i = 1; i < _length-1; i++) {
+					memcpy(_prev_row, _curr_row, _length);
+					memcpy(_curr_row, _next_row, _length);
+					memcpy(_next_row, _plate[i+1], _length);
+					for (int j = 1; j < _length-1; j++) {
+						calcNewCellValue(i, j);
+					}
+					cout << "\n";
+				}
+				cout << "Max diff: " << setprecision(3) << _max_change << "\n";
+			}
+			cout << "Steps: " << steps << "\n";
+		}
+	};
 
 public:
-	string toString() {
+	string toString(string separater) {
 		stringstream output;
 		for (int i = 0; i < _length; i++) {
 			for (int j = 0; j < _length; j++) {
-				output << (int)_plate[i][j] << "\t";
+				output << (int)_plate[i][j] << separater;
 			}
 			output << "\n";
 		}
 		return output.str();
+	}
+
+	string toString() {
+		return toString("\t");
+	}
+
+	void printToFile(string fileName) {
+		string output = toString(", ");
 	}
 
 	Hotplate(int length) {
@@ -90,5 +131,10 @@ public:
 			delete _plate[i];
 		}
 		delete _plate;
+	}
+
+	void createSteadyState() {
+		SteadyStateCreater creater(_plate, _length);
+		creater.createSteadyState();
 	}
 };

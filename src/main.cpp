@@ -1,9 +1,12 @@
 #include <iostream>
+#include <iomanip>
 #include <sys/time.h>
 
 #include "Hotplate.h"
 
 #define LENGTH 5
+
+using namespace std;
 
 /* Return the current time in seconds, using a double precision number. */
 float getTime() {
@@ -14,9 +17,11 @@ float getTime() {
 
 int main(int argc, char* argv[]) {
 	float time_b = getTime();
-	cout << time_b << "\n";
+	cout << setprecision(15) << time_b << "\n";
 
 	Hotplate plate = Hotplate(LENGTH);
+	// cout << plate.toString();
+	plate.createSteadyState();
 	cout << plate.toString();
 
 	float time_e = getTime();
