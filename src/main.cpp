@@ -8,8 +8,6 @@
 
 using namespace std;
 
-const char filename[] = "test.csv";
-
 int main(int argc, char* argv[]) {
 	double time_b = getTime();
 
@@ -17,7 +15,7 @@ int main(int argc, char* argv[]) {
 	// cout << plate.toString();
 	plate.createSteadyState();
 	// cout << plate.toString() << "\n";
-	plate.printToFile(filename);
+	plate.printToFile("test.csv");
 
 	double time_e = getTime();
 	printf("Time: %lf seconds\n", time_e - time_b);

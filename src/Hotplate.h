@@ -143,7 +143,7 @@ public:
 
 	void printToFile(string fileName) {
 		ofstream outfile;
-		outfile.open(fileName);
+		outfile.open(fileName.c_str());
 		outfile << toString(", ");
 		outfile.close();
 	}
