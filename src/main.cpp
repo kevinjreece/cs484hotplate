@@ -8,7 +8,7 @@
 
 using namespace std;
 
-char filename[] = "test.csv";
+const char filename[] = "test.csv";
 
 int main(int argc, char* argv[]) {
 	double time_b = getTime();
