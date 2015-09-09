@@ -39,11 +39,10 @@ string dblArrayToString(float** dbl_array, int length, string separater) {
 
 class Hotplate {
 private:
-	float** _plate;
-	int _length;
 	
 	class SteadyStateCreater {
 	private:
+		Hotplate* _hotplate;
 		float** _plate;
 		float** _old_plate;
 		int _length;
@@ -73,7 +72,7 @@ private:
 		bool isPlateSteady() {
 			for (int i = _steady_row; i < _length-1; i++) {
 				for (int j = _steady_col; j < _length-1; j++) {
-					if (!isCellSteady(i, j)) {
+					if (!(_hotplate->_locked_plate[i][j]) && !isCellSteady(i, j)) {
 						_steady_row = i;
 						_steady_col = j;
 						return false;
@@ -90,11 +89,12 @@ private:
 		}
 
 	public:
-		SteadyStateCreater(float** plate, int length) {
-			_plate = plate;
-			_old_plate = copyDblArray(plate, length);
+		SteadyStateCreater(Hotplate* hotplate) {
+			_hotplate = hotplate;
+			_plate = _hotplate->_plate;
 			// cout << dblArrayToString(_old_plate, length, "\t") << "\n";
-			_length = length;
+			_length = hotplate->_length;
+			_old_plate = copyDblArray(_plate, _length);
 			_steady_row = _steady_col = 1;
 		}
 
@@ -116,7 +116,7 @@ private:
 					}
 					// cout << "\n";
 				}
-				initLockedCells(_plate);
+				_hotplate->initLockedCells(_plate);
 				swapPlates();
 			}
 			if (steps % 2 == 1) swapPlates();
@@ -125,7 +125,14 @@ private:
 		}
 	};
 
+protected:
+	float** _plate;
+	int _length;
+	char** _locked_plate;
+
 public:
+
+
 	string toString(string separater) {
 		return dblArrayToString(_plate, _length, separater);
 	}
@@ -141,7 +148,7 @@ public:
 		outfile.close();
 	}
 
-	static void initLockedCells(float** dbl_array) {
+	void initLockedCells(float** dbl_array) {
 		// Row 400 columns 0 through 330 are fixed at 100 degrees
 		for (int i = 0; i <= 330; i++) {
 			dbl_array[400][i] = 100;
@@ -150,9 +157,27 @@ public:
 		dbl_array[200][500] = 100;
 	}
 
+	void initLockedCellsArray(int length) {
+		_locked_plate = new char*[length];
+		for (int i = 0; i < length; i++) {
+			_locked_plate[i] = new char[length];
+			for (int j = 0; j < length; j++) {
+				_locked_plate[i][j] = 0;
+			}
+		}
+
+		// Row 400 columns 0 through 330 are fixed at 100 degrees
+		for (int i = 0; i <= 330; i++) {
+			_locked_plate[400][i] = 1;
+		}
+		// A cell at row 200, column 500 also is fixed at 100 degrees
+		_locked_plate[200][500] = 1;
+	}
+
 	Hotplate(int length) {
 		_length = length;
 		_plate = new float*[_length];
+		initLockedCellsArray(_length);
 
 		for (int i = 0; i < _length; i++) {
 			float* row = new float[_length];
@@ -180,10 +205,11 @@ public:
 			delete _plate[i];
 		}
 		delete _plate;
+		delete _locked_plate;
 	}
 
 	void createSteadyState() {
-		SteadyStateCreater creater(_plate, _length);
+		SteadyStateCreater creater(this);
 		creater.createSteadyState();
 	}
 };
