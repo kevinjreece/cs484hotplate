@@ -4,9 +4,38 @@
 #include <algorithm>
 #include <iomanip>
 #include <fstream>
+#include <math.h>
 #include <stdlib.h>
 
+#include "time.h"
+
+#define EPSILON 0.1
+
 using namespace std;
+
+float** copyDblArray(float** dbl_array, int length) {
+	float** new_array = new float*[length];
+	for (int i = 0; i < length; i++) {
+		new_array[i] = new float[length];
+		// memcpy(new_array[i], dbl_array[i], length);
+
+		for (int j = 0; j < length; j++) {
+			new_array[i][j] = dbl_array[i][j];
+		}
+	}
+	return new_array;
+}
+
+string dblArrayToString(float** dbl_array, int length, string separater) {
+	stringstream output;
+	for (int i = 0; i < length; i++) {
+		for (int j = 0; j < length; j++) {
+			output << dbl_array[i][j] << separater;
+		}
+		output << "\n";
+	}
+	return output.str();
+}
 
 class Hotplate {
 private:
@@ -16,84 +45,89 @@ private:
 	class SteadyStateCreater {
 	private:
 		float** _plate;
+		float** _old_plate;
 		int _length;
-		float* _prev_row;
-		float* _curr_row;
-		float* _next_row;
-		float _max_change;
+		int _steady_row;
+		int _steady_col;
 
-		void calcMaxDiffForCell(int row, int col) {
-			 _max_change = max(_max_change, (float)abs(_plate[row][col] - (_plate[row-1][col] + _plate[row][col-1] + _plate[row][col+1] + _plate[row+1][col])/4));
+		bool isCellSteady(int row, int col) {
+			float up = _plate[row-1][col];
+			float left = _plate[row][col-1];
+			float center = _plate[row][col];
+			float right = _plate[row][col+1];
+			float down = _plate[row+1][col];
+			return fabs(center - (up + left + right + down) / 4) < EPSILON;
 		}
 
 		void calcNewCellValue(int row, int col) {
-			float val = (_prev_row[col] + _curr_row[col-1] + _curr_row[col+1] + _next_row[col] + (_curr_row[col]*4)) / 8;
+			float up = _old_plate[row-1][col];
+			float left = _old_plate[row][col-1];
+			float center = _old_plate[row][col];
+			float right = _old_plate[row][col+1];
+			float down = _old_plate[row+1][col];
+			float val = (up + left + right + down + (center*4)) / 8;
 			_plate[row][col] = val;
-			cout << (int)val << "\t";
-			//Check for steady state
-			if (row == 1);
-			else if (row > 1 && row < _length-2) {
-				calcMaxDiffForCell(row-1, col);
-			}
-			if (row == _length-2) {
-				if (col == 1);
-				else if (col > 1 && col < _length-2) {
-					calcMaxDiffForCell(row, col-1);
-				}
-				if (col == _length - 2) {
-					calcMaxDiffForCell(row, col);
+			// cout << (int)val << "\t";
+		}
+
+		bool isPlateSteady() {
+			for (int i = _steady_row; i < _length-1; i++) {
+				for (int j = _steady_col; j < _length-1; j++) {
+					if (!isCellSteady(i, j)) {
+						_steady_row = i;
+						_steady_col = j;
+						return false;
+					}
 				}
 			}
+			return true;
+		}
+
+		void swapPlates() {
+			float** temp = _plate;
+			_plate = _old_plate;
+			_old_plate = temp;
 		}
 
 	public:
 		SteadyStateCreater(float** plate, int length) {
 			_plate = plate;
+			_old_plate = copyDblArray(plate, length);
+			// cout << dblArrayToString(_old_plate, length, "\t") << "\n";
 			_length = length;
-			float max_change = 100;
-			_prev_row = new float[_length];
-			_curr_row = new float[_length];
-			_next_row = new float[_length];
+			_steady_row = _steady_col = 1;
 		}
 
 		~SteadyStateCreater() {
-			delete _prev_row;
-			delete _curr_row;
-			delete _next_row;
+			delete _old_plate;
 		}
 
 		void createSteadyState() {
 			int steps = 0;
-			while (_max_change > 0.1 && steps < 100) {
+			double time1, time2, time3;
+			while (!isPlateSteady() && steps < 500) {
+				// time1 = getTime();
 				steps++;
-				_max_change = 0;
-				memcpy(_curr_row, _plate[0], _length);
-				memcpy(_next_row, _plate[1], _length);
 				for (int i = 1; i < _length-1; i++) {
-					memcpy(_prev_row, _curr_row, _length);
-					memcpy(_curr_row, _next_row, _length);
-					memcpy(_next_row, _plate[i+1], _length);
 					for (int j = 1; j < _length-1; j++) {
+						// time2 = getTime();
 						calcNewCellValue(i, j);
+						// time3 = getTime();
 					}
-					cout << "\n";
+					// cout << "\n";
 				}
-				cout << "Max diff: " << setprecision(3) << _max_change << "\n";
+				initLockedCells(_plate);
+				swapPlates();
 			}
+			if (steps % 2 == 1) swapPlates();
 			cout << "Steps: " << steps << "\n";
+			cout << "Row: " << _steady_row << "\tCol: " << _steady_col << "\n";
 		}
 	};
 
 public:
 	string toString(string separater) {
-		stringstream output;
-		for (int i = 0; i < _length; i++) {
-			for (int j = 0; j < _length; j++) {
-				output << (int)_plate[i][j] << separater;
-			}
-			output << "\n";
-		}
-		return output.str();
+		return dblArrayToString(_plate, _length, separater);
 	}
 
 	string toString() {
@@ -105,6 +139,15 @@ public:
 		outfile.open(fileName);
 		outfile << toString(", ");
 		outfile.close();
+	}
+
+	static void initLockedCells(float** dbl_array) {
+		// Row 400 columns 0 through 330 are fixed at 100 degrees
+		for (int i = 0; i <= 330; i++) {
+			dbl_array[400][i] = 100;
+		}
+		// A cell at row 200, column 500 also is fixed at 100 degrees
+		dbl_array[200][500] = 100;
 	}
 
 	Hotplate(int length) {
@@ -128,6 +171,8 @@ public:
 			}
 			_plate[i] = row;
 		}
+		initLockedCells(_plate);
+		// cout << toString() << "\n";
 	}
 
 	~Hotplate() {
