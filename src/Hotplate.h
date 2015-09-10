@@ -10,6 +10,7 @@
 #include "time.h"
 
 #define EPSILON 0.1
+#define THRESHOLD 50
 
 using namespace std;
 
@@ -48,6 +49,18 @@ private:
 		int _length;
 		int _steady_row;
 		int _steady_col;
+
+		int getNumOver() {
+			int num = 0;
+			for (int i = 0; i < _length; i++) {
+				for (int j = 0; j < _length; j++) {
+					if (_plate[i][j] > THRESHOLD) {
+						num++;
+					}
+				}
+			}
+			return num;
+		}
 
 		bool isCellSteady(int row, int col) {
 			float up = _plate[row-1][col];
@@ -121,6 +134,7 @@ private:
 			}
 			if (steps % 2 == 1) swapPlates();
 			cout << "Steps: " << steps << "\n";
+			cout << "Over threshold: " << getNumOver() << "\n";
 			cout << "Row: " << _steady_row << "\tCol: " << _steady_col << "\n";
 		}
 	};

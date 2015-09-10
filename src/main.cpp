@@ -15,7 +15,7 @@ int main(int argc, char* argv[]) {
 	// cout << plate.toString();
 	plate.createSteadyState();
 	// cout << plate.toString() << "\n";
-	plate.printToFile("test.csv");
+	plate.printToFile("cpp.csv");
 
 	double time_e = getTime();
 	printf("Time: %lf seconds\n", time_e - time_b);
