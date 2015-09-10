@@ -19,7 +19,8 @@ int _steady_col;
 
 float** copyDblArray(float** dbl_array, int length) {
 	float** new_array = (float**)malloc(length * sizeof(float**));
-	for (int i = 0; i < length; i++) {
+	int i;
+	for (i = 0; i < length; i++) {
 		new_array[i] = (float*)malloc(length * sizeof(float*));
 		// memcpy(new_array[i], dbl_array[i], length);
 
@@ -32,7 +33,8 @@ float** copyDblArray(float** dbl_array, int length) {
 
 int getNumOver() {
 	int num = 0;
-	for (int i = 0; i < _length; i++) {
+	int i;
+	for (i = 0; i < _length; i++) {
 		for (int j = 0; j < _length; j++) {
 			if (_plate[i][j] > THRESHOLD) {
 				num++;
