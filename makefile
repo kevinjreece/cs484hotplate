@@ -2,14 +2,13 @@
 
 all: project
 
-project: bin/project_cpp.o bin/project_c.o
+project: cpp c
 
-
-bin/project_cpp.o: src/*.cpp src/*.h
+cpp: src/*.cpp src/*.h
 	@echo "Compiling C++ project"
 	@g++ -O3 src/*.cpp -o bin/project_cpp.o
 
-bin/project_c.o: src/*.c src/*.h
+c: src/*.c src/*.h
 	@echo "Compiling C project"
 	@gcc -std=c99 -O3 src/*.c -o bin/project_c.o
 
