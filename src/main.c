@@ -19,12 +19,12 @@ int _steady_col;
 
 float** copyDblArray(float** dbl_array, int length) {
 	float** new_array = (float**)malloc(length * sizeof(float**));
-	int i;
+	int i, j;
 	for (i = 0; i < length; i++) {
 		new_array[i] = (float*)malloc(length * sizeof(float*));
 		// memcpy(new_array[i], dbl_array[i], length);
 
-		for (int j = 0; j < length; j++) {
+		for (j = 0; j < length; j++) {
 			new_array[i][j] = dbl_array[i][j];
 		}
 	}
@@ -33,9 +33,9 @@ float** copyDblArray(float** dbl_array, int length) {
 
 int getNumOver() {
 	int num = 0;
-	int i;
+	int i, j;
 	for (i = 0; i < _length; i++) {
-		for (int j = 0; j < _length; j++) {
+		for (j = 0; j < _length; j++) {
 			if (_plate[i][j] > THRESHOLD) {
 				num++;
 			}
@@ -65,8 +65,9 @@ void calcNewCellValue(int row, int col) {
 }
 
 char isPlateSteady() {
-	for (int i = _steady_row; i < _length-1; i++) {
-		for (int j = _steady_col; j < _length-1; j++) {
+	int i, j;
+	for (i = _steady_row; i < _length-1; i++) {
+		for (j = _steady_col; j < _length-1; j++) {
 			if (!(_locked_plate[i][j]) && !isCellSteady(i, j)) {
 				_steady_row = i;
 				_steady_col = j;
@@ -84,8 +85,9 @@ void swapPlates() {
 }
 
 void initLockedCells(float** dbl_array) {
+	int i;
 	// Row 400 columns 0 through 330 are fixed at 100 degrees
-	for (int i = 0; i <= 330; i++) {
+	for (i = 0; i <= 330; i++) {
 		dbl_array[400][i] = 100;
 	}
 	// A cell at row 200, column 500 also is fixed at 100 degrees
@@ -96,8 +98,9 @@ void createSteadyState() {
 	int steps = 0;
 	while (!isPlateSteady() && steps < 500) {
 		steps++;
-		for (int i = 1; i < _length-1; i++) {
-			for (int j = 1; j < _length-1; j++) {
+		int i, j;
+		for (i = 1; i < _length-1; i++) {
+			for (j = 1; j < _length-1; j++) {
 				calcNewCellValue(i, j);
 			}
 		}
@@ -113,8 +116,9 @@ void createSteadyState() {
 void printToFile(char* filename) {
 	FILE* fp;
 	fp = fopen(filename, "w");
-	for (int i = 0; i < _length; i++) {
-		for (int j = 0; j < _length; j++) {
+	int i, j;
+	for (i = 0; i < _length; i++) {
+		for (j = 0; j < _length; j++) {
 			fprintf(fp, "%lf, ", _plate[i][j]);
 		}
 		fprintf(fp, "\n");
@@ -124,15 +128,16 @@ void printToFile(char* filename) {
 
 void initLockedCellsArray() {
 	_locked_plate = (char**)malloc(_length * sizeof(char**));
-	for (int i = 0; i < _length; i++) {
+	int i, j;
+	for (i = 0; i < _length; i++) {
 		_locked_plate[i] = (char*)malloc(_length * sizeof(char*));
-		for (int j = 0; j < _length; j++) {
+		for (j = 0; j < _length; j++) {
 			_locked_plate[i][j] = 0;
 		}
 	}
 
 	// Row 400 columns 0 through 330 are fixed at 100 degrees
-	for (int i = 0; i <= 330; i++) {
+	for (i = 0; i <= 330; i++) {
 		_locked_plate[400][i] = 1;
 	}
 	// A cell at row 200, column 500 also is fixed at 100 degrees
@@ -144,9 +149,10 @@ void setUp() {
 	_plate = (float**)malloc(_length * sizeof(float**));
 	initLockedCellsArray();
 	_steady_row = _steady_col = 1;
-	for (int i = 0; i < _length; i++) {
+	int i, j;
+	for (i = 0; i < _length; i++) {
 		float* row = (float*)malloc(_length * sizeof(float*));
-		for (int j = 0; j < _length; j++) {
+		for (j = 0; j < _length; j++) {
 			float temp;
 			if (i == _length - 1) {
 				temp = 100;
@@ -167,7 +173,8 @@ void setUp() {
 }
 
 void cleanUpMemory() {
-	for (int i = 0; i < _length; i++) {
+	int i;
+	for (i = 0; i < _length; i++) {
 		free(_plate[i]);
 	}
 	free(_plate);
