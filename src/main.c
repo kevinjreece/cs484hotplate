@@ -20,6 +20,7 @@ int _steady_col;
 float** copyDblArray(float** dbl_array, int length) {
 	float** new_array = (float**)malloc(length * sizeof(float**));
 	int i, j;
+	// #pragma omp parallel for private(i, j);
 	for (i = 0; i < length; i++) {
 		new_array[i] = (float*)malloc(length * sizeof(float*));
 		// memcpy(new_array[i], dbl_array[i], length);
@@ -33,6 +34,7 @@ float** copyDblArray(float** dbl_array, int length) {
 
 int getNumOver() {
 	int num = 0;
+	// #pragma omp parallel for private(i, j)
 	int i, j;
 	for (i = 0; i < _length; i++) {
 		for (j = 0; j < _length; j++) {
@@ -99,6 +101,7 @@ void createSteadyState() {
 	while (!isPlateSteady() && steps < 500) {
 		steps++;
 		int i, j;
+		// #pragma omp parallel for private(i, j)
 		for (i = 1; i < _length-1; i++) {
 			for (j = 1; j < _length-1; j++) {
 				calcNewCellValue(i, j);
@@ -129,6 +132,7 @@ void printToFile(char* filename) {
 void initLockedCellsArray() {
 	_locked_plate = (char**)malloc(_length * sizeof(char**));
 	int i, j;
+	// #pragma omp parallel for private(i, j)
 	for (i = 0; i < _length; i++) {
 		_locked_plate[i] = (char*)malloc(_length * sizeof(char*));
 		for (j = 0; j < _length; j++) {
@@ -137,6 +141,7 @@ void initLockedCellsArray() {
 	}
 
 	// Row 400 columns 0 through 330 are fixed at 100 degrees
+	// #pragma omp parallel for private(i)
 	for (i = 0; i <= 330; i++) {
 		_locked_plate[400][i] = 1;
 	}
@@ -150,6 +155,7 @@ void setUp() {
 	initLockedCellsArray();
 	_steady_row = _steady_col = 1;
 	int i, j;
+	// #pragma omp parallel for private(i, j)
 	for (i = 0; i < _length; i++) {
 		float* row = (float*)malloc(_length * sizeof(float*));
 		for (j = 0; j < _length; j++) {
@@ -168,6 +174,7 @@ void setUp() {
 		_plate[i] = row;
 	}
 	initLockedCells(_plate);
+	// printf("init: %d\n", getNumOver());
 	_old_plate = copyDblArray(_plate, _length);
 	// cout << toString() << "\n";
 }
